@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PF Group — Pannello Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pf-orange:#F47920;--pf-orange-dark:#d4671a;--pf-orange-light:#fff0e6;
+  --pf-gray:#585858;--pf-gray-dark:#3a3a3a;
+  --border:#e0ddd8;--surface:#ffffff;--page-bg:#f5f4f2;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --radius:12px;--radius-sm:8px;
+  --bg-verde:#1B8C3E;--bg-giallo:#D4860A;--bg-arancio:#E05C00;
+  --bg-rosso:#C0392B;--bg-asterisco:#5A5A5A;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--page-bg);color:var(--text);min-height:100vh;}
+
+/* SPLASH */
+.splash{position:fixed;inset:0;z-index:999;background:var(--pf-gray);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,transform .6s;}
+.splash.hidden{opacity:0;pointer-events:none;transform:scale(1.04);}
+.splash-pf{font-size:64px;font-weight:800;letter-spacing:-2px;}
+.splash-pf .o{color:var(--pf-orange);}.splash-pf .w{color:#fff;}
+.splash-fm{font-size:16px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.25em;text-transform:uppercase;margin-top:4px;}
+.splash-div{width:60px;height:2px;background:var(--pf-orange);margin:24px auto;border-radius:2px;}
+.splash-title{font-size:18px;font-weight:700;color:#fff;text-align:center;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.45);text-align:center;margin-top:6px;}
+.splash-btn{margin-top:36px;padding:14px 40px;background:var(--pf-orange);color:#fff;border-radius:30px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(244,121,32,.4);}
+.splash-btn:hover{background:var(--pf-orange-dark);}
+.splash-badge{position:absolute;bottom:30px;font-size:11px;color:rgba(255,255,255,.25);}
+.app{display:none;}.app.visible{display:block;}
+
+/* HEADER */
+.header{background:var(--pf-gray);padding:12px 20px 10px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--pf-orange);}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.header-brand{display:flex;align-items:center;gap:14px;}
+.h-logo{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1;}
+.h-logo .o{color:var(--pf-orange);}.h-logo .w{color:#fff;}
+.h-tag{color:rgba(255,255,255,.5);font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;margin-top:1px;}
+.h-sep{width:1.5px;height:32px;background:rgba(255,255,255,.2);}
+.h-service{color:#fff;font-size:13px;font-weight:700;}
+.h-client{color:rgba(255,255,255,.55);font-size:11px;margin-top:1px;}
+.h-date{color:rgba(255,255,255,.5);font-size:11px;text-align:right;line-height:1.5;white-space:nowrap;}
+.sync-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);padding:4px 10px;border-radius:20px;margin-top:6px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#25D366;flex-shrink:0;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* NAV */
+.nav-tabs{display:flex;background:var(--pf-gray-dark);border-bottom:1px solid var(--border);}
+.nav-tab{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;}
+.nav-tab.active{color:var(--pf-orange);border-bottom-color:var(--pf-orange);}
+.nav-tab:hover:not(.active){color:rgba(255,255,255,.8);}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-bottom:1px solid var(--border);}
+.stat-item{text-align:center;padding:12px 6px;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-size:22px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:10px;color:var(--text2);margin-top:3px;font-weight:600;text-transform:uppercase;}
+
+/* SEARCH */
+.search-bar{padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;}
+.search-input{flex:1;padding:10px 14px 10px 38px;border-radius:30px;border:1.5px solid var(--border);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;}
+.search-input:focus{outline:none;border-color:var(--pf-orange);}
+.search-clear{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--page-bg);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;display:none;}
+.search-clear.show{display:block;}
+
+/* FILTERS */
+.filters-bar{padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;}
+.filter-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--page-bg);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.filter-chip.active{background:var(--pf-orange);color:#fff;border-color:var(--pf-orange);}
+.filter-chip:hover:not(.active){border-color:var(--pf-orange);color:var(--pf-orange);}
+
+/* LEGEND */
+.legend{padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;background:var(--pf-gray);border-bottom:3px solid var(--pf-orange);}
+.leg-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:5px 12px;border-radius:30px;color:#fff;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,.2);}
+
+.section-panel{display:none;}.section-panel.active{display:block;}
+.table-wrap{padding:14px 20px;}
+.commessa-group{margin-bottom:16px;}
+.commessa-label{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:0 4px;margin-bottom:6px;}
+.commessa-cards{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+
+/* CARDS */
+.filiale-card{background:var(--surface);border-bottom:1px solid var(--border);}
+.filiale-card:last-child{border-bottom:none;}
+.filiale-card.selected{background:var(--pf-orange-light);border-left:3px solid var(--pf-orange);}
+.card-header{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;transition:background .1s;}
+.card-header:hover{background:rgba(0,0,0,.02);}
+.filiale-card.selected .card-header{background:var(--pf-orange-light);}
+.filiale-name{font-size:13px;font-weight:700;color:var(--text);}
+.filiale-meta{font-size:11px;color:var(--text2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;}
+.stato-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:5px 11px;border-radius:30px;white-space:nowrap;color:#fff;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.stato-badge .sym{font-size:13px;line-height:1;}
+.stato-verde{background:var(--bg-verde);}.stato-giallo{background:var(--bg-giallo);}
+.stato-arancio{background:var(--bg-arancio);}.stato-rosso{background:var(--bg-rosso);}
+.stato-asterisco{background:var(--bg-asterisco);}
+.wa-mini{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#e9fbe9;color:#25D366;border:1.5px solid #25D366;text-decoration:none;font-size:15px;flex-shrink:0;transition:background .15s;}
+.wa-mini:hover{background:#25D366;color:#fff;}
+
+/* DETAIL */
+.card-detail{border-top:1px solid var(--border);padding:14px 16px;background:#fafaf8;display:none;}
+.filiale-card.selected .card-detail{display:block;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.detail-item label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px;}
+.detail-item span{font-size:13px;font-weight:500;color:var(--text);}
+.sec-title{font-size:10px;font-weight:800;color:var(--pf-gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;margin-top:12px;}
+.sec-title:first-child{margin-top:0;}
+
+.conseg-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.conseg-btn{padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;}
+.conseg-btn.active{background:var(--pf-gray);color:#fff;border-color:var(--pf-gray);}
+.conseg-btn:hover:not(.active){border-color:var(--pf-orange);color:var(--pf-orange);}
+
+.ordini-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:4px;}
+.ordini-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.ordine-field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;}
+.ordine-input{width:100%;padding:9px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--text);background:var(--surface);}
+.ordine-input:focus{outline:none;border-color:var(--pf-orange);}
+.save-btn{width:100%;padding:10px;border-radius:var(--radius-sm);background:var(--pf-orange);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+.save-btn:hover{background:var(--pf-orange-dark);}
+
+.stato-selector{width:100%;padding:11px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--text);appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;margin-bottom:10px;}
+.stato-selector:focus{outline:none;border-color:var(--pf-orange);}
+.wa-full-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:#25D366;color:#fff;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s;}
+.wa-full-btn:hover{background:#1da851;}
+
+/* PROGRAMMAZIONE */
+.prog-wrap{padding:14px 20px;}
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.week-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s;}
+.week-btn:hover{border-color:var(--pf-orange);color:var(--pf-orange);}
+.week-label{font-size:13px;font-weight:700;color:var(--text);flex:1;text-align:center;}
+.wa-prog-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;color:#fff;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-bottom:14px;width:100%;}
+.wa-prog-btn:hover{background:#1da851;}
+.giorni-grid{display:flex;flex-direction:column;gap:10px;}
+.giorno-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.giorno-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--pf-gray);}
+.giorno-label{font-size:13px;font-weight:800;color:#fff;flex:1;}
+.giorno-date-lbl{font-size:12px;color:rgba(255,255,255,.6);}
+.giorno-count{font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.15);padding:2px 8px;border-radius:20px;}
+.prog-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;}
+.prog-row:last-child{border-bottom:none;}
+.prog-cantiere{font-weight:700;color:var(--text);}
+.prog-comm{font-size:10px;color:var(--text3);}
+.prog-ordine{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--pf-orange);}
+.prog-conseg{font-size:11px;color:var(--pf-gray);font-weight:600;}
+.prog-fascia{font-size:11px;color:var(--text2);white-space:nowrap;}
+.prog-remove{background:none;border:none;color:#C0392B;cursor:pointer;font-size:18px;padding:0 4px;}
+.prog-add-row{padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fafaf8;border-top:1px solid var(--border);}
+.prog-select,.fascia-select,.conseg-select{font-size:12px;padding:7px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);font-family:'DM Sans',sans-serif;color:var(--text);}
+.prog-select{flex:1;min-width:140px;}
+.prog-add-btn{padding:7px 14px;border-radius:var(--radius-sm);background:var(--pf-orange);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+/* STORICO */
+.storico-wrap{padding:14px 20px;}
+.storico-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.storico-title{font-size:16px;font-weight:800;color:var(--text);}
+.arch-btn{padding:9px 18px;border-radius:20px;background:var(--pf-gray);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.arch-btn:hover{background:var(--pf-gray-dark);}
+.storico-empty{text-align:center;padding:40px;color:var(--text2);font-size:14px;line-height:1.6;}
+.storico-mese{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.storico-mese-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--pf-gray);cursor:pointer;}
+.storico-mese-title{font-size:14px;font-weight:800;color:#fff;}
+.storico-mese-sub{font-size:11px;color:rgba(255,255,255,.6);}
+.storico-mese-body{display:none;}
+.storico-mese-body.open{display:block;}
+.storico-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:8px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;}
+.storico-row:last-child{border-bottom:none;}
+.storico-row:hover{background:#fafaf8;}
+.storico-nome{font-weight:600;color:var(--text);}
+.storico-comm{font-size:10px;color:var(--text3);}
+.storico-ordine{font-family:'DM Mono',monospace;font-size:11px;color:var(--pf-orange);font-weight:600;}
+.storico-stato{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;color:#fff;white-space:nowrap;}
+
+/* OVERLAY */
+.wa-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center;}
+.wa-overlay.open{display:flex;}
+.wa-panel{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:20px 20px 36px;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.wa-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.wa-panel-title{font-size:15px;font-weight:700;color:var(--text);}
+.close-btn{width:32px;height:32px;border-radius:50%;background:var(--page-bg);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+.wa-bubble-preview{background:#DCF8C6;border-radius:16px 16px 4px 16px;padding:14px 16px;font-family:'DM Mono',monospace;font-size:12px;color:#111;line-height:1.8;white-space:pre-wrap;word-break:break-word;margin-bottom:14px;max-height:55vh;overflow-y:auto;}
+.wa-send-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#25D366;color:#fff;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s;}
+.wa-send-btn:hover{background:#1da851;}
+
+.empty-state{text-align:center;padding:40px;color:var(--text2);font-size:14px;display:none;}
+.empty-state.show{display:block;}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:var(--pf-gray);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:998;transition:opacity .4s;}
+.loading-overlay.hidden{opacity:0;pointer-events:none;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--pf-orange);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,.7);font-size:14px;}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--pf-orange);color:#fff;padding:11px 22px;border-radius:30px;font-size:13px;font-weight:700;transition:transform .3s;z-index:300;white-space:nowrap;box-shadow:0 4px 20px rgba(244,121,32,.35);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.error{background:#C0392B;}
+
+.footer{background:var(--pf-gray);padding:14px 20px;text-align:center;margin-top:20px;}
+.footer-logo{font-size:18px;font-weight:800;letter-spacing:-.5px;}
+.footer-logo .o{color:var(--pf-orange);}.footer-logo .w{color:#fff;}
+.footer-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.1em;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Caricamento dati dal foglio Google...</div>
+</div>
+
+<!-- SPLASH -->
+<div class="splash" id="splash" style="display:none">
+  <div style="text-align:center">
+    <div class="splash-pf"><span class="o">PF</span><span class="w">GROUP</span></div>
+    <div class="splash-fm">Facility Management</div>
+  </div>
+  <div class="splash-div"></div>
+  <div class="splash-title">Pannello Admin — Appalti Generali</div>
+  <div class="splash-sub">Dati caricati · Pronto all'uso</div>
+  <button class="splash-btn" onclick="avviaApp()">Accedi al pannello →</button>
+  <div class="splash-badge">PF GROUP © 2026 — Solo uso interno</div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+<div class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <div><div class="h-logo"><span class="o">PF</span><span class="w">GROUP</span></div><div class="h-tag">Facility Management</div></div>
+      <div class="h-sep"></div>
+      <div><div class="h-service">Pannello Admin — Appalti Generali</div><div class="h-client">Gestione consegne · Programmazione · Storico</div></div>
+    </div>
+    <div>
+      <div class="h-date" id="headerDate"></div>
+      <div class="sync-badge"><span class="sync-dot"></span><span id="syncLabel">Connesso a Google Sheet</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('consegne',this)">📦 Consegne</div>
+  <div class="nav-tab" onclick="switchTab('programmazione',this)">📅 Programmazione</div>
+  <div class="nav-tab" onclick="switchTab('storico',this)">🗂 Storico</div>
+</div>
+
+<div class="section-panel active" id="panel-consegne">
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" type="text" placeholder="Cerca cantiere, città, responsabile..." oninput="onSearch()">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕ Cancella</button>
+  </div>
+  <div class="filters-bar">
+    <div class="filter-chip active" onclick="setFilter('tutti',this)">Tutte</div>
+    <div class="filter-chip" onclick="setFilter('arancio',this)">In preparazione</div>
+    <div class="filter-chip" onclick="setFilter('giallo',this)">In consegna</div>
+    <div class="filter-chip" onclick="setFilter('verde',this)">Consegnate</div>
+    <div class="filter-chip" onclick="setFilter('rosso',this)">In ritardo</div>
+    <div class="filter-chip" onclick="setFilter('asterisco',this)">Non accettate</div>
+  </div>
+  <div class="legend">
+    <span class="leg-pill" style="background:var(--bg-arancio)">◉ IN PREPARAZIONE</span>
+    <span class="leg-pill" style="background:var(--bg-giallo)">▶▶ IN CONSEGNA</span>
+    <span class="leg-pill" style="background:var(--bg-verde)">✔ CONSEGNATO</span>
+    <span class="leg-pill" style="background:var(--bg-rosso)">! IN RITARDO</span>
+    <span class="leg-pill" style="background:var(--bg-asterisco)">✕ NON ACCETTATO</span>
+  </div>
+  <div class="table-wrap" id="tableWrap"></div>
+  <div id="noResults" class="empty-state">Nessun cantiere trovato.</div>
+</div>
+
+<div class="section-panel" id="panel-programmazione">
+  <div class="prog-wrap">
+    <div class="week-nav">
+      <button class="week-btn" onclick="cambiaSettimana(-1)">← Precedente</button>
+      <div class="week-label" id="weekRangeLabel"></div>
+      <button class="week-btn" onclick="cambiaSettimana(1)">Successiva →</button>
+    </div>
+    <button class="wa-prog-btn" onclick="apriWAProg()">▶ Invia programmazione settimanale a Valy</button>
+    <div class="giorni-grid" id="giorni-grid"></div>
+  </div>
+</div>
+
+<div class="section-panel" id="panel-storico">
+  <div class="storico-wrap">
+    <div class="storico-header">
+      <div class="storico-title">Storico mensile</div>
+      <button class="arch-btn" onclick="archiviaCurrentMonth()">📁 Archivia mese corrente</button>
+    </div>
+    <div id="storicoBody"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-logo"><span class="o">PF</span><span class="w">GROUP</span></div>
+  <div class="footer-sub">Facility Management · Appalti Generali · 2026</div>
+</div>
+</div>
+
+<div class="wa-overlay" id="waOverlay" onclick="closeOverlay(event)">
+  <div class="wa-panel">
+    <div class="wa-panel-header">
+      <div class="wa-panel-title" id="waPanelTitle">Anteprima WhatsApp</div>
+      <button class="close-btn" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="wa-bubble-preview" id="waPreviewText"></div>
+    <a class="wa-send-btn" id="waSendLink" href="#" target="_blank">&#9654; Apri in WhatsApp e invia</a>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbxQQToz8rJtgSTc0J_DwyT89BpUtOX4nxhNb3rGefGWT9dm1atcD1bA3s3jZwpscIew/exec';
+
+function api(params) {
+  const url = API_URL + '?' + Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  return fetch(url).then(r=>r.json());
+}
+
+// ── INIT ──
+const oggi = new Date();
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function fmt(d){if(!d)return '';if(typeof d==='string'&&d.includes('/'))return d;const dt=new Date(d);return isNaN(dt)?d:dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtShort(d){return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});}
+const GG=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const MM=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+document.getElementById('headerDate').innerHTML=GG[oggi.getDay()]+'<br>'+oggi.getDate()+' '+MM[oggi.getMonth()]+' '+oggi.getFullYear();
+
+const CONSEGNATORI=['Massimo','Simone','Giuseppe','Giovanni','Antonio','Pierpaolo','Antonino'];
+const statoConf={
+  verde:    {label:'CONSEGNATO',     simboloWA:'[✓]', badge:'stato-verde',    sym:'✔'},
+  giallo:   {label:'IN CONSEGNA',   simboloWA:'[>>]',badge:'stato-giallo',   sym:'▶▶'},
+  arancio:  {label:'IN PREPARAZIONE',simboloWA:'[o]',badge:'stato-arancio',  sym:'◉'},
+  rosso:    {label:'IN RITARDO',    simboloWA:'[!]', badge:'stato-rosso',    sym:'!'},
+  asterisco:{label:'NON ACCETTATO', simboloWA:'[x]', badge:'stato-asterisco',sym:'✕'},
+};
+const fasce=[];
+for(let h=5;h<=21;h++){fasce.push(String(h).padStart(2,'0')+':00 - '+String(h+1).padStart(2,'0')+':00');if(h<21)fasce.push(String(h).padStart(2,'0')+':30 - '+String(h+1).padStart(2,'0')+':30');}
+
+let cantieri=[], filtroStato='tutti', searchQuery='', selezionato=null;
+const storico=[], programmazione={};
+
+// ── CARICA DAL GOOGLE SHEET ──
+async function caricaDati() {
+  try {
+    const res = await api({action:'getCantieri'});
+    if(res.ok) {
+      cantieri = res.cantieri.map(c=>({
+        id:          c.id,
+        commessa:    c.COMMESSA    || '',
+        nome:        c.NOME        || '',
+        indirizzo:   c.INDIRIZZO   || '',
+        citta:       c.CITTA       || '',
+        resp:        c.RESPONSABILE|| '',
+        tel:         String(c.TELEFONO||''),
+        freq:        c.FREQ        || 'Mensile',
+        stato:       c.STATO       || 'arancio',
+        data:        fmt(c.DATA_PREVISTA||''),
+        fascia:      c.FASCIA      || '09:00 - 10:00',
+        ordineCliente: c.ORDINE_CLIENTE||'',
+        confOrdine:  c.CONF_ORDINE ||'',
+        consegnatore:c.CONSEGNATORE||'',
+      }));
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('splash').style.display='flex';
+      setTimeout(()=>document.getElementById('loadingOverlay').style.display='none', 500);
+    }
+  } catch(e) {
+    // fallback dati locali se offline
+    cantieri=[
+      {id:0,commessa:'UniCredit SPA', nome:'UniCredit SPA — Piazza Saffi, 43',         citta:'Forlì (FC)',             indirizzo:'Piazza Saffi 43, Forlì (FC)',             resp:'Alessia Ruzzante',tel:'3386120655',freq:'Mensile',stato:'arancio',data:'',fascia:'09:00 - 10:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+      {id:1,commessa:'UniCredit SPA', nome:'UniCredit SPA — Via del Lavoro, 42',        citta:'Bologna (BO)',           indirizzo:'Via del Lavoro 42, Bologna (BO)',          resp:'Maria Renna',     tel:'3385087647',freq:'Mensile',stato:'arancio',data:'',fascia:'10:00 - 11:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+      {id:2,commessa:'UniCredit SPA', nome:"UniCredit SPA — Viale dell'Agricoltura, 1",citta:'Verona (VR)',            indirizzo:"Viale dell'Agricoltura 1, Verona (VR)",   resp:'Lorena Masarà',   tel:'3457810614',freq:'Mensile',stato:'arancio',data:'',fascia:'09:00 - 10:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+      {id:3,commessa:'Fincantieri SPA',nome:'Fincantieri SPA — Via delle Industrie, 18',citta:'Marghera (VE)',         indirizzo:'Via delle Industrie 18, Marghera (VE)',   resp:'Manuela Moretti', tel:'3456228437',freq:'Mensile',stato:'arancio',data:'',fascia:'08:00 - 09:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+      {id:4,commessa:'C.C. Soledoro', nome:'C.C. Soledoro — Via Giaveno, 61',          citta:'Rivalta di Torino (TO)',indirizzo:'Via Giaveno 61, Rivalta di Torino (TO)',  resp:'Angela Manca',    tel:'3428070076',freq:'Mensile',stato:'arancio',data:'',fascia:'10:00 - 11:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+      {id:5,commessa:'Uffici Milano',  nome:'Uffici Milano — Via Figino, 1',            citta:'Pero (MI)',             indirizzo:'Via Figino 1, Pero (MI)',                  resp:'Agnese Perna',    tel:'3427573507',freq:'Mensile',stato:'arancio',data:'',fascia:'09:00 - 10:00',ordineCliente:'',confOrdine:'',consegnatore:''},
+    ];
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('splash').style.display='flex';
+    setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',500);
+    document.getElementById('syncLabel').textContent='Modalità offline';
+    showToast('Attenzione: dati locali (offline)', true);
+  }
+}
+
+function avviaApp(){
+  document.getElementById('splash').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  renderStats();renderCards();renderProg();renderStorico();
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='programmazione')renderProg();
+  if(name==='storico')renderStorico();
+}
+
+// ── WA MSG ──
+function buildMsgResp(f){
+  const s=statoConf[f.stato]||statoConf.arancio;
+  return 'Ciao '+f.resp+',\n\ndi seguito nuovo aggiornamento:\n\n'
+    +'--------------------------------\n'+f.commessa.toUpperCase()+'\n'+f.indirizzo.toUpperCase()+' - '+f.citta.toUpperCase()+'\n'+'--------------------------------\n\n'
+    +'STATO DELLA MERCE:\n'+'*'+s.label+'* '+s.simboloWA+'\n\n'
+    +'GIORNO: '+(f.data||'—')+'\n'+'ORA:    '+f.fascia+'\n\n'
+    +'CONSEGNATO DA: '+(f.consegnatore||'—')+'\n\n'
+    +'DUEGI SRL ringrazia per la fiducia\n'+'ed è sempre al tuo fianco.\n'
+    +'Per qualsiasi necessità rispondi\na questo messaggio.';
+}
+function waLinkResp(f){return 'https://wa.me/39'+f.tel+'?text='+encodeURIComponent(buildMsgResp(f));}
+
+// ── SEARCH / FILTER ──
+function onSearch(){searchQuery=document.getElementById('searchInput').value.toLowerCase();document.getElementById('searchClear').classList.toggle('show',searchQuery.length>0);renderCards();}
+function clearSearch(){document.getElementById('searchInput').value='';searchQuery='';document.getElementById('searchClear').classList.remove('show');renderCards();}
+function setFilter(val,el){filtroStato=val;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderCards();}
+
+// ── STATS ──
+function renderStats(){
+  const c={verde:0,giallo:0,arancio:0,rosso:0,asterisco:0};
+  cantieri.forEach(f=>c[f.stato]=(c[f.stato]||0)+1);
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat-item"><div class="stat-num">${cantieri.length}</div><div class="stat-lbl">Cantieri</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:#1B8C3E">${c.verde||0}</div><div class="stat-lbl">Consegnate</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:#D4860A">${c.giallo||0}</div><div class="stat-lbl">In consegna</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:#C0392B">${c.rosso||0}</div><div class="stat-lbl">In ritardo</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:#5A5A5A">${c.asterisco||0}</div><div class="stat-lbl">Non accett.</div></div>`;
+}
+
+// ── AZIONI ──
+function toggleCard(id){selezionato=selezionato===id?null:id;renderCards();}
+
+async function cambiaStato(id,val){
+  cantieri[id].stato=val;
+  renderStats();
+  const card=document.querySelector('.filiale-card[data-id="'+id+'"]');
+  if(card){const s=statoConf[val];const b=card.querySelector('.stato-badge');if(b){b.className='stato-badge '+s.badge;b.innerHTML='<span class="sym">'+s.sym+'</span>'+s.label.split(' ')[0];}}
+  showToast('Stato aggiornato...');
+  try{await api({action:'updateStato',id,valore:val});showToast('✓ Salvato su Google Sheet');}
+  catch(e){showToast('Errore salvataggio',true);}
+}
+
+function setConsegnatore(id,nome){
+  cantieri[id].consegnatore=cantieri[id].consegnatore===nome?'':nome;
+  document.querySelectorAll('#conseg_'+id+' .conseg-btn').forEach(b=>b.classList.toggle('active',b.dataset.nome===cantieri[id].consegnatore));
+  api({action:'updateConsegnatore',id,valore:cantieri[id].consegnatore});
+  showToast(cantieri[id].consegnatore?'Consegnatore: '+cantieri[id].consegnatore:'Consegnatore rimosso');
+}
+
+async function salvaOrdini(id){
+  cantieri[id].ordineCliente=document.getElementById('oc_'+id).value.trim();
+  cantieri[id].confOrdine=document.getElementById('cn_'+id).value.trim();
+  try{await api({action:'updateOrdine',id,ordine_cliente:cantieri[id].ordineCliente,conf_ordine:cantieri[id].confOrdine});showToast('✓ Ordini salvati su Google Sheet');}
+  catch(e){showToast('Errore salvataggio',true);}
+}
+
+function apriWACard(id){
+  const f=cantieri[id];
+  document.getElementById('waPanelTitle').textContent='WhatsApp → '+f.resp;
+  document.getElementById('waPreviewText').textContent=buildMsgResp(f);
+  document.getElementById('waSendLink').href=waLinkResp(f);
+  document.getElementById('waOverlay').classList.add('open');
+}
+
+// ── CARDS ──
+function renderCards(){
+  const wrap=document.getElementById('tableWrap');
+  const vis=cantieri.filter(f=>{
+    const ms=filtroStato==='tutti'||f.stato===filtroStato;
+    const mq=!searchQuery||(f.nome+f.citta+f.commessa+f.resp+f.ordineCliente+f.confOrdine+f.indirizzo).toLowerCase().includes(searchQuery);
+    return ms&&mq;
+  });
+  document.getElementById('noResults').className=vis.length===0?'empty-state show':'empty-state';
+  const gruppi={};vis.forEach(f=>{if(!gruppi[f.commessa])gruppi[f.commessa]=[];gruppi[f.commessa].push(f);});
+  wrap.innerHTML=Object.keys(gruppi).map(comm=>`
+    <div class="commessa-group">
+      <div class="commessa-label">${comm}</div>
+      <div class="commessa-cards">
+        ${gruppi[comm].map(f=>{
+          const s=statoConf[f.stato]||statoConf.arancio;const isSel=selezionato===f.id;
+          const dataLabel=f.stato==='verde'?'Cons. il '+f.data:f.stato==='rosso'?'Prev. '+f.data+' SCADUTA':f.stato==='giallo'?'Oggi '+f.data:(f.data?'Prevista: '+f.data:'Data da programmare');
+          return `<div class="filiale-card${isSel?' selected':''}" data-id="${f.id}">
+            <div class="card-header" onclick="toggleCard(${f.id})">
+              <div>
+                <div class="filiale-name">${f.nome}</div>
+                <div class="filiale-meta">
+                  <span>${f.citta}</span><span style="color:#ccc">·</span>
+                  <span>${dataLabel}</span>
+                  ${f.fascia&&f.data?'<span style="color:#ccc">·</span><span>'+f.fascia+'</span>':''}
+                  ${f.resp?'<span style="color:#ccc">·</span><span>'+f.resp+'</span>':''}
+                  ${f.consegnatore?'<span style="color:#ccc">·</span><span style="color:var(--pf-gray);font-weight:600">'+f.consegnatore+'</span>':''}
+                </div>
+              </div>
+              <span class="stato-badge ${s.badge}"><span class="sym">${s.sym}</span>${s.label.split(' ')[0]}</span>
+              <a class="wa-mini" onclick="event.stopPropagation();apriWACard(${f.id})" href="javascript:void(0)">&#9654;</a>
+            </div>
+            <div class="card-detail">
+              <div class="detail-grid">
+                <div class="detail-item"><label>Appalto</label><span>${f.commessa}</span></div>
+                <div class="detail-item"><label>Responsabile</label><span>${f.resp}</span></div>
+                <div class="detail-item"><label>Indirizzo</label><span>${f.indirizzo}</span></div>
+                <div class="detail-item"><label>Telefono</label><span>${f.tel}</span></div>
+                <div class="detail-item"><label>Data Consegna Prevista</label><span>${f.data||'Da programmare'}</span></div>
+                <div class="detail-item"><label>Fascia oraria</label><span>${f.fascia}</span></div>
+              </div>
+              <div class="sec-title">Chi consegna</div>
+              <div class="conseg-grid" id="conseg_${f.id}">
+                ${CONSEGNATORI.map(c=>`<button class="conseg-btn${f.consegnatore===c?' active':''}" data-nome="${c}" onclick="setConsegnatore(${f.id},'${c}')">${c}</button>`).join('')}
+              </div>
+              <div class="sec-title">Ordini</div>
+              <div class="ordini-box">
+                <div class="ordini-row">
+                  <div class="ordine-field"><label>N° Ordine Cliente</label><input class="ordine-input" id="oc_${f.id}" value="${f.ordineCliente}" placeholder="Es. ORD-2026-001"></div>
+                  <div class="ordine-field"><label>Nostra Conferma N°</label><input class="ordine-input" id="cn_${f.id}" value="${f.confOrdine}" placeholder="Es. PF-001"></div>
+                </div>
+                <button class="save-btn" onclick="salvaOrdini(${f.id})">Salva ordini su Google Sheet</button>
+              </div>
+              <div class="sec-title">Aggiorna stato</div>
+              <select class="stato-selector" onchange="cambiaStato(${f.id},this.value)">
+                <option value="arancio" ${f.stato==='arancio'?'selected':''}>◉  In preparazione</option>
+                <option value="giallo"  ${f.stato==='giallo'?'selected':''}>>>  In consegna oggi</option>
+                <option value="verde"   ${f.stato==='verde'?'selected':''}>✔  Consegnato</option>
+                <option value="rosso"   ${f.stato==='rosso'?'selected':''}>!  In ritardo</option>
+                <option value="asterisco" ${f.stato==='asterisco'?'selected':''}>✕  Non accettato</option>
+              </select>
+              <a class="wa-full-btn" onclick="apriWACard(${f.id})" href="javascript:void(0)">&#9654; Anteprima e invio WhatsApp a ${f.resp}</a>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── PROGRAMMAZIONE ──
+let settimanaOffset=0;
+function getLunedi(off){const d=new Date(oggi);const dow=d.getDay()===0?6:d.getDay()-1;d.setDate(d.getDate()-dow+off*7);return d;}
+function cambiaSettimana(n){settimanaOffset+=n;renderProg();}
+
+function buildMsgProg(){
+  const lun=getLunedi(settimanaOffset);const ven=addDays(lun,4);
+  const giorni=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'];
+  let righe='';let tot=0;
+  giorni.forEach((g,i)=>{
+    const giorno=addDays(lun,i);const key=fmt(giorno);
+    const items=programmazione[key]||[];
+    if(items.length>0){
+      righe+='\n*'+g.toUpperCase()+' '+fmtShort(giorno)+'*\n';
+      items.forEach(item=>{
+        const c=cantieri[item.cantiereId];if(!c)return;
+        righe+='- '+c.commessa+' | '+c.citta+'\n';
+        righe+='  Fascia: '+item.fascia+'\n';
+        if(c.ordineCliente)righe+='  Ord. cliente: '+c.ordineCliente+'\n';
+        if(c.confOrdine)righe+='  Nostra conf.: '+c.confOrdine+'\n';
+        righe+='  Consegna: '+(item.consegnatore||'—')+'\n';
+        tot++;
+      });
+    }
+  });
+  if(!righe)righe='\nNessuna consegna programmata per questa settimana.\n';
+  return 'Buon pomeriggio Valy,\n\ndi seguito programmazione consegne\nper la prossima settimana\ndal '+fmtShort(lun)+' al '+fmtShort(ven)+'/'+ven.getFullYear()+':\n================================'+righe+'================================\n\nTotale consegne programmate: '+tot+'\n\nPer qualsiasi necessità o modifica\ndel programma contattaci pure.\nGrazie per la fiducia.\nTeam DUEGI';
+}
+
+function renderProg(){
+  const lun=getLunedi(settimanaOffset);const ven=addDays(lun,4);
+  document.getElementById('weekRangeLabel').textContent='Dal '+lun.getDate()+' '+MM[lun.getMonth()]+' al '+ven.getDate()+' '+MM[ven.getMonth()]+' '+ven.getFullYear();
+  const fasceSel=fasce.map(f=>`<option>${f}</option>`).join('');
+  const consegSel='<option value="">— Chi consegna —</option>'+CONSEGNATORI.map(c=>`<option>${c}</option>`).join('');
+  const giorni=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'];
+  document.getElementById('giorni-grid').innerHTML=giorni.map((g,i)=>{
+    const giorno=addDays(lun,i);const key=fmt(giorno);const items=programmazione[key]||[];
+    return `<div class="giorno-block">
+      <div class="giorno-header"><div class="giorno-label">${g}</div><div class="giorno-date-lbl">${fmtShort(giorno)}</div><div class="giorno-count">${items.length} consegn${items.length===1?'a':'e'}</div></div>
+      <div>
+        ${items.map((item,idx)=>{const c=cantieri[item.cantiereId];if(!c)return '';return `<div class="prog-row"><div><div class="prog-cantiere">${c.nome}</div><div class="prog-comm">${c.commessa} · ${c.citta}</div></div><div class="prog-ordine">${c.ordineCliente||'—'}</div><div class="prog-conseg">${item.consegnatore||'—'}</div><div class="prog-fascia">${item.fascia}</div><button class="prog-remove" onclick="rimuoviProg('${key}',${idx})">×</button></div>`;}).join('')}
+        <div class="prog-add-row">
+          <select class="prog-select" id="sel_${key}"><option value="">— Seleziona cantiere —</option>${cantieri.map(c=>`<option value="${c.id}">${c.commessa} · ${c.citta} — ${c.resp}</option>`).join('')}</select>
+          <select class="fascia-select" id="fas_${key}">${fasceSel}</select>
+          <select class="conseg-select" id="con_${key}">${consegSel}</select>
+          <button class="prog-add-btn" onclick="aggiungiProg('${key}')">+ Aggiungi</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function aggiungiProg(key){
+  const id=parseInt(document.getElementById('sel_'+key).value);
+  if(isNaN(id)){showToast('Seleziona un cantiere');return;}
+  const fas=document.getElementById('fas_'+key).value;
+  const con=document.getElementById('con_'+key).value;
+  if(!programmazione[key])programmazione[key]=[];
+  programmazione[key].push({cantiereId:id,fascia:fas,consegnatore:con});
+  cantieri[id].data=key;cantieri[id].fascia=fas;cantieri[id].stato='arancio';
+  if(con)cantieri[id].consegnatore=con;
+  // Salva su Google Sheet
+  try{
+    await api({action:'updateProgrammazione',payload:JSON.stringify([{id,data:key,fascia:fas,consegnatore:con}])});
+    showToast('✓ Programmazione salvata su Google Sheet');
+  }catch(e){showToast('Salvato localmente',true);}
+  renderProg();renderCards();renderStats();
+}
+function rimuoviProg(key,idx){programmazione[key].splice(idx,1);renderProg();}
+
+function apriWAProg(){
+  document.getElementById('waPanelTitle').textContent='Programmazione → Valy (Direttrice Acquisti)';
+  document.getElementById('waPreviewText').textContent=buildMsgProg();
+  document.getElementById('waSendLink').href='https://wa.me/393427267002?text='+encodeURIComponent(buildMsgProg());
+  document.getElementById('waOverlay').classList.add('open');
+}
+
+// ── STORICO ──
+function archiviaCurrentMonth(){
+  const mese=MM[oggi.getMonth()]+' '+oggi.getFullYear();
+  if(storico.find(s=>s.label===mese)){showToast('Mese già archiviato');return;}
+  storico.unshift({label:mese,dati:cantieri.map(c=>({...c})),archiviato:new Date().toLocaleString('it-IT')});
+  cantieri.forEach(c=>{c.stato='arancio';c.ordineCliente='';c.confOrdine='';c.consegnatore='';c.data='';});
+  renderStats();renderCards();renderStorico();
+  showToast('Mese "'+mese+'" archiviato');
+}
+function renderStorico(){
+  const body=document.getElementById('storicoBody');
+  if(storico.length===0){body.innerHTML='<div class="storico-empty">Nessun mese archiviato.<br><br>Clicca "Archivia mese corrente" alla fine di ogni mese<br>per conservare lo storico completo delle consegne.</div>';return;}
+  body.innerHTML=storico.map((s,si)=>{
+    const v=s.dati.filter(c=>c.stato==='verde').length;const r=s.dati.filter(c=>c.stato==='rosso').length;
+    return `<div class="storico-mese">
+      <div class="storico-mese-header" onclick="document.getElementById('stor_${si}').classList.toggle('open')">
+        <div class="storico-mese-title">${s.label}</div>
+        <div class="storico-mese-sub">Archiviato il ${s.archiviato} · ${s.dati.length} cantieri · ${v} consegnati${r>0?' · '+r+' in ritardo':''}</div>
+      </div>
+      <div class="storico-mese-body" id="stor_${si}">
+        ${s.dati.map(c=>{const sc=statoConf[c.stato]||statoConf.asterisco;return `<div class="storico-row">
+          <div><div class="storico-nome">${c.nome}</div><div class="storico-comm">${c.commessa} · ${c.citta} · ${c.resp}</div></div>
+          <div class="storico-ordine">${c.ordineCliente||'—'}</div>
+          <div class="storico-ordine" style="color:var(--pf-gray)">${c.confOrdine||'—'}</div>
+          <div style="font-size:11px;color:var(--text2)">${c.data}${c.consegnatore?' · '+c.consegnatore:''}</div>
+          <span class="storico-stato ${sc.badge}">${sc.sym} ${sc.label.split(' ')[0]}</span>
+        </div>`;}).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function closeOverlay(e){if(!e||e.target===document.getElementById('waOverlay'))document.getElementById('waOverlay').classList.remove('open');}
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' error':'')+' show';setTimeout(()=>t.classList.remove('show'),2400);}
+
+// ── START ──
+caricaDati();
+</script>
+</body>
+</html>
